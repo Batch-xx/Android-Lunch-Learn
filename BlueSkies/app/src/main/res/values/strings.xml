@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Blue Skies</string>
-    <string name="day_default">--------</string>
-    <string name="date_default">-----------</string>
-    <string name="hi_temp_default">----</string>
-    <string name="low_temp_default">----</string>
-    <string name="temp_switch_default">----------</string>
+    <string name="day_default">Wednesday</string>
+    <string name="date_default">June 15, 2017</string>
+    <string name="hi_temp_default">76\u00B0</string>
+    <string name="low_temp_default">48\u00B0</string>
+    <string name="temp_switch_default">Celisus</string>
 </resources>
