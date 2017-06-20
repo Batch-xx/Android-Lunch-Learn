@@ -14,4 +14,8 @@ public class TemperatureFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.temperature_frag, parent, false);
     }
+
+    public void onClickTemperatureSwitch(View view){
+
+    }
 }
