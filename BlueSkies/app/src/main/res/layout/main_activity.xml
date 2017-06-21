@@ -19,8 +19,8 @@
         tools:layout="@layout/time_date_frag" />
 
     <fragment
-        android:name="com.bkbatchelor.blueskies.TemperatureFragment"
         android:id="@+id/temperature_frag_main_activity"
+        android:name="com.bkbatchelor.blueskies.TemperatureFragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
