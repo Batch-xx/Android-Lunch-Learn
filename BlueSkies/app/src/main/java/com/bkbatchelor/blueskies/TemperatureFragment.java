@@ -1,5 +1,6 @@
 package com.bkbatchelor.blueskies;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,6 +11,14 @@ import android.widget.Toast;
 
 
 public class TemperatureFragment extends Fragment {
+    private Context context;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
@@ -17,6 +26,6 @@ public class TemperatureFragment extends Fragment {
     }
 
     public void onClickTemperatureSwitch(View view){
-        Toast.makeText(getActivity(), "clicked on switch", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "clicked on switch", Toast.LENGTH_SHORT).show();
     }
 }

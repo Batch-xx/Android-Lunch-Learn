@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClickTemperatureSwitch(View view){
         FragmentManager fm = getSupportFragmentManager();
         TemperatureFragment temperatureFragment =
-                (TemperatureFragment)fm.findFragmentById(R.id.temp_switch_button_temperature_frag);
+                (TemperatureFragment)fm.findFragmentById(R.id.temperature_frag_main_activity);
 
         temperatureFragment.onClickTemperatureSwitch(view);
     }
