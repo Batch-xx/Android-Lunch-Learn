@@ -5,4 +5,7 @@
     <string name="hi_temp_default">76\u00B0</string>
     <string name="low_temp_default">48\u00B0</string>
     <string name="temp_switch_default">Celisus</string>
+    <!-- Notification -->
+    <string name="notification_title">Today\'s Temperature</string>
+    <string name="notification_message">message</string>
 </resources>
