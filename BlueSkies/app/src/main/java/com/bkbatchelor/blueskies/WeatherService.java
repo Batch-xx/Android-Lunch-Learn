@@ -6,12 +6,20 @@ import android.os.IBinder;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 
 public class WeatherService extends Service {
     private Thread weatherThread = null;
     private int NOTIFICATION_ID = 1333;
+    private int sleepIntervalMillisec = 60000;
+    private boolean ThreadIsRunning = true;
     private String  todayTemperature = "0\u00B0";
+    private String TAG = WeatherService.class.getSimpleName();
+
+    public static String TEMPERATURE_SEND_EVENT = "com.bkbatchelor.blueskies.TEMPERATURE_SEND_EVENT";
+    public static String TEMPERATURE_KEY = "com.bkbatchelor.blueskies.TEMPERATURE_KEY";
+
 
     @Override
     public void onCreate() {
@@ -19,7 +27,15 @@ public class WeatherService extends Service {
         weatherThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                //Communicate with OpenWeather API
+                while(ThreadIsRunning) {
+                    sendEvent("45");
+
+                    try{
+                        Thread.sleep(sleepIntervalMillisec);
+                    }catch(Exception e){
+                        Log.e(TAG, e.toString());
+                    }
+                }
             }
         });
     }
@@ -58,5 +74,16 @@ public class WeatherService extends Service {
                         .setContentIntent(pendingIntent);
 
         return builder.build();
+    }
+
+    public void setThreadIsRunning(boolean threadIsRunning) {
+        ThreadIsRunning = threadIsRunning;
+    }
+
+    private void sendEvent(String temperature){
+        Intent sendEventIntent = new Intent();
+        sendEventIntent.setAction(TEMPERATURE_SEND_EVENT);
+        sendEventIntent.putExtra(TEMPERATURE_KEY,temperature);
+        sendBroadcast(sendEventIntent);
     }
 }
