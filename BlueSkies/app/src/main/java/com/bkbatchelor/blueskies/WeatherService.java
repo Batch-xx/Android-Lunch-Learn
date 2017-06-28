@@ -1,7 +1,11 @@
 package com.bkbatchelor.blueskies;
 
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -25,14 +29,42 @@ import okhttp3.Response;
 public class WeatherService extends Service {
     private Thread weatherThread = null;
     private int NOTIFICATION_ID = 1333;
-    private int sleepIntervalMillisec = 60000;
+    private int sleepIntervalMillisec = 3600000;
     private boolean ThreadIsRunning = true;
     private String  todayTemperature = "0\u00B0";
     private OkHttpClient client = new OkHttpClient();
     private String TAG = WeatherService.class.getSimpleName();
 
-    public static String TEMPERATURE_SEND_EVENT = "com.bkbatchelor.blueskies.TEMPERATURE_SEND_EVENT";
-    public static String TEMPERATURE_KEY = "com.bkbatchelor.blueskies.TEMPERATURE_KEY";
+    public static String TEMPERATURE_SEND_EVENT = "com.bkbatchelor.blueskies.ServiceTEMPERATURE_SEND_EVENT";
+    public static String TEMPERATURE_KEY = "com.bkbatchelor.blueskies.ServiceTEMPERATURE_KEY";
+    public static String PRESENT_TEMP_EVENT = "com.bkbatchelor.blueskies.Service.PRESENT_TEMP_EVENT";
+
+    private IntentFilter presentTempEventFilter = new IntentFilter(PRESENT_TEMP_EVENT);
+
+    private BroadcastReceiver presentTempReceiver = new BroadcastReceiver(){
+        @Override
+        public void onReceive(Context context, Intent intent){
+            String temp = intent.getStringExtra("present_temp");
+            if(temp != null){
+                todayTemperature = temp + "\u00B0";
+            }else{
+                todayTemperature = "--\u00B0";
+            }
+
+            NotificationManager notificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            Notification notification =
+                    new Notification.Builder(WeatherService.this)
+                            .setContentTitle(getText(R.string.notification_title))
+                            .setContentText(todayTemperature)
+                            .setSmallIcon(R.mipmap.ic_launcher_round)
+                            .setContentIntent(getPendingIntent())
+                            .build();
+
+            notificationManager.notify(NOTIFICATION_ID,notification);
+        }
+    };
 
 
     @Override
@@ -79,6 +111,8 @@ public class WeatherService extends Service {
 
         startForeground(NOTIFICATION_ID,getNotification());
 
+        registerReceiver(presentTempReceiver, presentTempEventFilter);
+
         if(!weatherThread.isAlive()) {
             weatherThread.start();
         }
@@ -95,18 +129,24 @@ public class WeatherService extends Service {
         super.onDestroy();
     }
 
+    private PendingIntent getPendingIntent(){
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        return  PendingIntent.getActivity(this, 0, notificationIntent, 0);
+    }
+
     private Notification getNotification() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
+        Notification notification=
+                new Notification.Builder(this)
                         .setContentTitle(getText(R.string.notification_title))
                         .setContentText(todayTemperature)
                         .setSmallIcon(R.mipmap.ic_launcher_round)
-                        .setContentIntent(pendingIntent);
+                        .setContentIntent(getPendingIntent())
+                        .build();
 
-        return builder.build();
+        return notification;
     }
 
     public void setThreadIsRunning(boolean threadIsRunning) {

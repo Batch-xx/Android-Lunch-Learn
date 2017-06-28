@@ -12,8 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import static com.bkbatchelor.blueskies.WeatherService.PRESENT_TEMP_EVENT;
 import static com.bkbatchelor.blueskies.WeatherService.TEMPERATURE_KEY;
 import static com.bkbatchelor.blueskies.WeatherService.TEMPERATURE_SEND_EVENT;
 
@@ -26,10 +26,10 @@ public class TemperatureFragment extends Fragment {
     private boolean isFahrenheit = false;
 
     private IntentFilter temperatureEventFilter = new IntentFilter(TEMPERATURE_SEND_EVENT);
+
     private BroadcastReceiver temperatureReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Toast.makeText(context, "Broadcast Received", Toast.LENGTH_LONG).show();
             WeatherParcelable weatherParcelable = intent.getParcelableExtra(TEMPERATURE_KEY);
 
             presentTemp = weatherParcelable.getPresentTemp();
@@ -78,6 +78,13 @@ public class TemperatureFragment extends Fragment {
         }
     }
 
+    private void sendEvent(String temp){
+        Intent sendEventIntent = new Intent();
+        sendEventIntent.setAction(PRESENT_TEMP_EVENT);
+        sendEventIntent.putExtra("present_temp",temp);
+        getActivity().sendBroadcast(sendEventIntent);
+    }
+
     private void setTemperatures(double presentTemp, double lowTemp, double hiTemp) {
         double convertPresentTemp;
         double convertlowTemp;
@@ -98,6 +105,7 @@ public class TemperatureFragment extends Fragment {
             convertlowTemp = convertKelvinToFahrenheit(lowTemp);
             convertHiTemp = convertKelvinToFahrenheit(hiTemp);
             tempSwitch.setText(getText(R.string.fahrenheit));
+
         }else{
             convertPresentTemp = convertKelvinToCelius(presentTemp);
             convertlowTemp = convertKelvinToCelius(lowTemp);
@@ -108,6 +116,7 @@ public class TemperatureFragment extends Fragment {
         presentTempView.setText(String.valueOf((int)convertPresentTemp) + "\u00B0");
         lowTempView.setText(String.valueOf((int)convertlowTemp) + "\u00B0");
         hiTempView.setText(String.valueOf((int)convertHiTemp) + "\u00B0");
+        sendEvent(String.valueOf((int)convertPresentTemp) + "\u00B0");
     }
 
     private double convertKelvinToFahrenheit(double degreeKelvin) {
