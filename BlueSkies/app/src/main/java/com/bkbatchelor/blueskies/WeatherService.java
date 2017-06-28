@@ -127,6 +127,11 @@ public class WeatherService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(presentTempReceiver);
+
+        if(weatherThread.isAlive()) {
+            weatherThread.interrupt();
+        }
     }
 
     private PendingIntent getPendingIntent(){
@@ -135,9 +140,6 @@ public class WeatherService extends Service {
     }
 
     private Notification getNotification() {
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
         Notification notification=
                 new Notification.Builder(this)
                         .setContentTitle(getText(R.string.notification_title))

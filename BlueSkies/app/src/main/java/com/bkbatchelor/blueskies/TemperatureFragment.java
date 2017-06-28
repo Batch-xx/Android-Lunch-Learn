@@ -25,7 +25,12 @@ public class TemperatureFragment extends Fragment {
     private double hiTemp;
     private boolean isFahrenheit = false;
 
-    private IntentFilter temperatureEventFilter = new IntentFilter(TEMPERATURE_SEND_EVENT);
+    private String PRESENT_TEMP = "present_temp";
+    private String LOW_TEMP = "low_temp";
+    private String HI_TEMP = "hi_temp";
+    private String IS_FAHRENHEIT = "is_fahrenheit";
+
+    private IntentFilter temperatureSendEventFilter = new IntentFilter(TEMPERATURE_SEND_EVENT);
 
     private BroadcastReceiver temperatureReceiver = new BroadcastReceiver() {
         @Override
@@ -49,20 +54,37 @@ public class TemperatureFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
+        if(savedInstanceState != null){
+            this.isFahrenheit = savedInstanceState.getBoolean(IS_FAHRENHEIT);
+            this.presentTemp = savedInstanceState.getDouble(PRESENT_TEMP);
+            this.lowTemp = savedInstanceState.getDouble(LOW_TEMP);
+            this.hiTemp = savedInstanceState.getDouble(HI_TEMP);
+        }
         return inflater.inflate(R.layout.temperature_frag, parent, false);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        context.registerReceiver(temperatureReceiver, temperatureEventFilter);
+        setTemperatures(presentTemp, lowTemp, hiTemp);
+        context.registerReceiver(temperatureReceiver, temperatureSendEventFilter);
     }
 
 
     @Override
     public void onStop() {
         super.onStop();
+
         context.unregisterReceiver(temperatureReceiver);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putDouble(PRESENT_TEMP,presentTemp);
+        outState.putDouble(LOW_TEMP, lowTemp);
+        outState.putDouble(HI_TEMP, hiTemp);
+        outState.putBoolean(IS_FAHRENHEIT, isFahrenheit);
+        super.onSaveInstanceState(outState);
     }
 
     public void onClickTemperatureSwitch(View view) {
