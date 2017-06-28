@@ -5,8 +5,21 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.os.Parcel;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+
+import com.bkbatchelor.blueskies.model.WeatherModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class WeatherService extends Service {
@@ -15,6 +28,7 @@ public class WeatherService extends Service {
     private int sleepIntervalMillisec = 60000;
     private boolean ThreadIsRunning = true;
     private String  todayTemperature = "0\u00B0";
+    private OkHttpClient client = new OkHttpClient();
     private String TAG = WeatherService.class.getSimpleName();
 
     public static String TEMPERATURE_SEND_EVENT = "com.bkbatchelor.blueskies.TEMPERATURE_SEND_EVENT";
@@ -28,7 +42,26 @@ public class WeatherService extends Service {
             @Override
             public void run() {
                 while(ThreadIsRunning) {
-                    sendEvent("45");
+                    String  body = null;
+                    Request request = new Request.Builder()
+                            .url("http://api.openweathermap.org/data/2.5/weather?zip=07728,us&appid=04fcf857a9e769c45f9ab6141c8ccb0e")
+                            .build();
+                    try {
+                        Response response = client.newCall(request).execute();
+                        if(!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+                        body  = response.body().string();
+                    }catch(IOException e){
+                        Log.e(TAG, e.toString());
+                    }
+
+                    WeatherModel weatherModel = jsonToWeatherModel(body);
+                    WeatherParcelable weatherParcelable =  new WeatherParcelable(
+                            weatherModel.getMain().getTemp(),
+                            weatherModel.getMain().getTempMin(),
+                            weatherModel.getMain().getTempMax());
+
+                    sendEvent(weatherParcelable);
 
                     try{
                         Thread.sleep(sleepIntervalMillisec);
@@ -80,10 +113,17 @@ public class WeatherService extends Service {
         ThreadIsRunning = threadIsRunning;
     }
 
-    private void sendEvent(String temperature){
+    private void sendEvent(WeatherParcelable parcelable){
         Intent sendEventIntent = new Intent();
         sendEventIntent.setAction(TEMPERATURE_SEND_EVENT);
-        sendEventIntent.putExtra(TEMPERATURE_KEY,temperature);
+        sendEventIntent.putExtra(TEMPERATURE_KEY,parcelable);
         sendBroadcast(sendEventIntent);
     }
+
+    private WeatherModel jsonToWeatherModel(String response) {
+        Gson gson = new GsonBuilder().create();
+        WeatherModel weatherModel = gson.fromJson(response,WeatherModel.class);
+        return  weatherModel;
+    }
+
 }
